@@ -1,0 +1,161 @@
+<aura:component controller="ObjectivesClass" implements="flexipage:availableForRecordHome,lightning:actionOverride,flexipage:availableForAllPageTypes,force:appHostable,force:hasRecordId" access="global">
+    <aura:attribute name="allObjectives" type="Object"/>
+    <aura:attribute name="columns" type="List"/>
+    <aura:attribute name="newObjectiveBool" type="Boolean" default="false" />
+    <aura:attribute name="editObjectiveBool" type="Boolean" default="false" />
+    <aura:attribute name="recordId" type="String" />
+    <!--PAGINATION ATTRIBUTES-->
+    <aura:attribute name="currentPageNumber" type="Integer" default="1" />
+    <aura:attribute name="pageSize" type="Integer" default="5" />
+    <aura:attribute name="totalPages" type="Integer" default="0" />
+    <aura:attribute name="pageList" type="List" />
+    <aura:attribute name="allData" type="List" />
+    <!--SEARCH ATTRIBUTES-->
+    <aura:attribute name="searchString" type="String" />
+    <aura:attribute name="searchResult" type="Object"/>
+    <!--ERROR MESSAGE ATTRIBUTES-->
+    <aura:attribute name="errorMsg" type="String" />
+
+    <aura:handler name="init" value="{!this}" action ="{!c.doInit}" />
+    <aura:handler event="force:refreshView" action="{!c.doInit}" />
+    <lightning:spinner variant="brand" size="large" aura:id="Id_spinner" class="slds-hide" />
+
+    <div class="slds-m-around_xx-large">
+        <lightning:card class="all-objectives">
+            <h1 class="to-do-text">To-Do List</h1>
+            <div class="button-create-record">
+                <lightning:button label="New" onclick="{!c.openModalWindow}" />
+            </div>
+            <div class="to-do-search">
+                <lightning:button class="clear-button" onclick="{!c.clearSearchInput}" iconName="utility:clear"/>
+                <lightning:input class="search-input"
+                                 value="{!v.searchString}"
+                                 placeholder="search Tasks.."
+                                 aura:id="searchField"/>
+               <lightning:button class="search-button" onclick="{!c.searchObjectives}" iconName="utility:search"/>
+            </div>
+<!--ВМЕСТО LIGHTNING:DATATABLE МОЖНО ИСПОЛЬЗОВАТЬ ОБЫЧНУЮ TABLE И С ПОМОЩЬЮ ИТЕРАЦИИ ПОКАЗЫВАТЬ ВСЕ ТАСКИ. НО Я РЕШИЛА, ЧТО ИСПОЛЬЗОВАНИЕ УЖЕ СТАНДАРТНОГО БУДЕТ ВПОЛНЕ НЕПЛОХО-->
+            <!--ОПЯТЬ ЖЕ, МОБИЛЬНАЯ ВЕРСИЯ НЕ ПОДДЕРЖИВАЕТ LIGHTNING:DATATABLE, ИМЕННО ПОЭТОМУ МОЖНО ПЕРЕПИСАТЬ НА TABLE :)  -->
+            <lightning:layout class="all-objectives-class" multipleRows="true" horizontalAlign="center">
+                <lightning:layoutItem padding="around-small" size="12">
+                    <lightning:datatable
+                            aura:id="objectivesDataTable"
+                            columns="{!v.columns}"
+                            data="{!v.allObjectives}"
+                            keyField="Id"
+                            hideCheckboxColumn="true"
+                            onrowaction="{!c.windowEditOrDeleteRecord}">
+                    </lightning:datatable>
+                    <h1 class="error-message-text">{!v.errorMsg}</h1>
+                </lightning:layoutItem>
+                <!--PAGINATION-->
+                <lightning:layoutItem padding="around-small" flexibility="auto">
+                    <lightning:button iconName="utility:chevronleft" iconPosition="left"
+                                      onclick="{!c.onPrev}" disabled="{!v.currentPageNumber == 1}"/>
+                    <span class="slds-p-horizontal_x-small">
+                        <a onclick="{!c.pageProcessing}" name="1" class="{!(v.currentPageNumber == 1) ? 'selected' : ''}">1</a>
+                    </span>
+                    <aura:iteration items="{!v.pageList}" var="item">
+                        <span class="slds-p-horizontal_x-small">
+                            <a onclick="{!c.pageProcessing}" name="{!item}" class="{!(v.currentPageNumber == item) ? 'selected' : ''}">{!item}</a>
+                        </span>
+                    </aura:iteration>
+                    <span class="slds-p-horizontal_x-small">
+                        <a onclick="{!c.pageProcessing}" name="{!v.totalPages}" class="{!(v.currentPageNumber == v.totalPages) ? 'selected' : ''}">{!v.totalPages}</a>
+                    </span>
+                    <lightning:button iconName="utility:chevronright" iconPosition="right"
+                                      disabled="{!v.currentPageNumber == v.totalPages}" onclick="{!c.onNext}"/>
+                </lightning:layoutItem>
+            </lightning:layout>
+            <!--SEARCH-->
+            <aura:if isTrue="{!searchBool}">
+                <lightning:layout class="all-objectives-class" multipleRows="true" horizontalAlign="center">
+                    <lightning:layoutItem padding="around-small" size="12">
+                        <lightning:datatable
+                                aura:id="objectivesDataTable"
+                                columns="{!v.columns}"
+                                data="{!v.searchResult}"
+                                keyField="Id"
+                                hideCheckboxColumn="true"
+                                onrowaction="{!c.windowEditOrDeleteRecord}">
+                        </lightning:datatable>
+                    </lightning:layoutItem>
+                    <lightning:layoutItem padding="around-small" flexibility="auto">
+                        <lightning:button iconName="utility:chevronleft" iconPosition="left"
+                                          onclick="{!c.onPrev}" disabled="{!v.currentPageNumber == 1}"/>
+                        <span class="slds-p-horizontal_x-small">
+                            <a onclick="{!c.pageProcessing}" name="1" class="{!(v.currentPageNumber == 1) ? 'selected' : ''}">1</a>
+                        </span>
+                        <aura:iteration items="{!v.pageList}" var="item">
+                            <span class="slds-p-horizontal_x-small">
+                                <a onclick="{!c.pageProcessing}" name="{!item}" class="{!(v.currentPageNumber == item) ? 'selected' : ''}">{!item}</a>
+                            </span>
+                        </aura:iteration>
+                        <span class="slds-p-horizontal_x-small">
+                            <a onclick="{!c.pageProcessing}" name="{!v.totalPages}" class="{!(v.currentPageNumber == v.totalPages) ? 'selected' : ''}">{!v.totalPages}</a>
+                        </span>
+                        <lightning:button iconName="utility:chevronright" iconPosition="right"
+                                          disabled="{!v.currentPageNumber == v.totalPages}" onclick="{!c.onNext}"/>
+                    </lightning:layoutItem>
+                </lightning:layout>
+            </aura:if>
+        </lightning:card>
+        <!--CREATE-->
+        <aura:if isTrue="{!v.newObjectiveBool}">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">New Objective</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm
+                                aura:id="createForm"
+                                onsubmit="{!c.saveNewRecord}"
+                                objectApiName="Objective__c">
+                            <lightning:inputField fieldName="Title__c" />
+                            <lightning:inputField fieldName="Description__c" />
+                            <lightning:inputField fieldName="Date_of_creation__c" />
+                            <lightning:inputField fieldName="Category__c" />
+                            <lightning:inputField fieldName="Priority__c" />
+                            <lightning:inputField fieldName="Is_Done__c" />
+                            <div class="slds-m-top_medium">
+                                <lightning:button label="Cancel" title="Cancel" onclick="{!c.closeModalWindow}"/>
+                                <lightning:button variant="brand" type="submit" name="save" label="Save" />
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+        <!--EDIT-->
+        <aura:if isTrue="{!v.editObjectiveBool}">
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Edit Objective</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <lightning:recordEditForm
+                                aura:id="editForm"
+                                recordId="{!v.recordId}"
+                                onsubmit="{!c.saveEditRecord}"
+                                objectApiName="Objective__c">
+                            <lightning:inputField fieldName="Title__c"/>
+                            <lightning:inputField fieldName="Description__c" />
+                            <lightning:inputField fieldName="Date_of_creation__c" />
+                            <lightning:inputField fieldName="Category__c" />
+                            <lightning:inputField fieldName="Priority__c" />
+                            <lightning:inputField fieldName="Is_Done__c" />
+                            <div class="slds-m-top_medium">
+                                <lightning:button label="Cancel" title="Cancel" onclick="{!c.closeWindowForEditRecord}"/>
+                                <lightning:button variant="brand" type="submit" name="save" label="Save" />
+                            </div>
+                        </lightning:recordEditForm>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </aura:if>
+    </div>
+</aura:component>

@@ -1,0 +1,51 @@
+.THIS .all-objectives {
+    width: 100%;
+}
+
+.THIS .button-create-record {
+    float: right;
+    padding-right: 1rem;
+}
+
+.THIS .to-do-search {
+    display: flex;
+}
+
+.THIS .slds-card__header {
+    padding: 0;
+}
+
+.THIS .to-do-text {
+    text-align: center;
+    font-size: x-large;
+}
+
+.THIS .clear-button {
+   border: 0;
+   padding-right: 0;
+   height: 2rem;
+   width: 2rem;
+}
+
+.THIS .search-button {
+    border: 0;
+    height: 2rem;
+    width: 2rem;
+}
+
+.THIS .search-input {
+    margin-top: -1rem;
+}
+
+.THIS .slds-scrollable_x {
+    overflow-y:visible!important;
+    overflow-x:visible!important;
+}
+.THIS .slds-scrollable_y {
+    overflow-y:visible!important;
+    overflow-x:visible!important;
+}
+
+.THIS .error-message-text {
+    text-align: center;
+}
