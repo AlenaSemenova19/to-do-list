@@ -49,3 +49,19 @@
 .THIS .error-message-text {
     text-align: center;
 }
+
+.THIS .redColor {
+    color : red;
+}
+
+.THIS .orangeColor {
+    color : orange;
+}
+
+.THIS .greenColor {
+    color : green;
+}
+
+.THIS .blackColor {
+    color: black;
+}

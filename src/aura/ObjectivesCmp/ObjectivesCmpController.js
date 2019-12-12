@@ -8,7 +8,7 @@
             {label: 'Title', fieldName: 'Title__c', type: 'text'},
             {label: 'Description', fieldName: 'Description__c', type: 'text'},
             {label: 'Date Of Creation', fieldName: 'Date_of_creation__c', type: 'date'},
-            {label: 'Category', fieldName: 'Category__c', type: 'text'},
+            {label: 'Category', fieldName: 'Category__c', type: 'text' ,"cellAttributes": {"class": {"fieldName": "showClass"}} },
             {label: 'Priority', fieldName: 'Priority__c', type: 'text'},
             {label: 'Is Done', fieldName: 'Is_Done__c', type: 'boolean'},
             {

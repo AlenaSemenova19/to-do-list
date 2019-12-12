@@ -25,9 +25,21 @@
             	data.push(allData[x]);
             }
         }
+
+        data.forEach(function(record) {
+            switch (record.Category__c) {
+              case 'Today':
+                record.showClass = 'redColor';
+                break;
+              case 'Tomorrow':
+                record.showClass = 'orangeColor';
+                break;
+              case 'Later':
+                record.showClass = 'greenColor';
+                break;
+            }
+        });
         component.set("v.allObjectives", data);
-        var myData = component.get("v.allObjectives");
-        helper.changeColorOfCategory(component, event, helper);
         helper.generatePageList(component, pageNumber);
     },
 
@@ -91,19 +103,4 @@
         alert('Record '+ event.getParam('row').Title__c + ' has been deleted successfully!');
         $A.enqueueAction(action);
     },
-
-    changeColorOfCategory : function (component, event, helper) {
-        var myData = component.get("v.allObjectives");
-        for (var i=0; i<myData.length; i++) {
-            if(myData[i].Category__c !== null) {
-                if(myData[i].Category__c === 'Today') {
-                    console.log('it is today. Red');
-                } else if(myData[i].Category__c === 'Tomorrow') {
-                    console.log('it is tomorrow. Orange');
-                } else if(myData[i].Category__c === 'Later') {
-                    console.log('it is later. Green');
-                }
-            }
-        }
-    }
 });
